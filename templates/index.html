@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido | Alquiler de Portátiles</title>
+    <!-- Link a Bootstrap 5 para estilo básico -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Fondo y tipografía mínima */
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: #a8a8a8;
+            margin-bottom: 50px;
+        }
+
+        /* Estilo de los botones */
+        .btn {
+            background-color: rgb(0, 255, 255);  /* Fondo visible para los botones */
+            border: 2px solid rgb(0, 255, 255);  /* Borde visible */
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            color: white;  /* El texto es blanco por defecto */
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        /* Efecto de borde RGB en los botones */
+        .btn:hover {
+            color: white; /* El texto será blanco cuando el botón esté en hover */
+            background: transparent;
+            border: 2px solid rgb(0, 255, 255);
+            animation: waveEffect 1.5s linear infinite;
+        }
+
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgb(0, 255, 255);
+            transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s;
+            border-radius: 50%;
+            z-index: 0;
+            transform: translate(-50%, -50%);
+        }
+
+        .btn:hover:before {
+            width: 0;
+            height: 0;
+            top: 50%;
+            left: 50%;
+        }
+
+        /* Animación de onda RGB */
+        @keyframes waveEffect {
+            0% {
+                border-color: rgb(0, 255, 255);
+            }
+            50% {
+                border-color: rgb(255, 0, 150);
+            }
+            100% {
+                border-color: rgb(255, 255, 0);
+            }
+        }
+
+        /* Estilo para la fila de botones */
+        .btn-container {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .btn-container .btn {
+            width: 48%;
+            z-index: 1;
+        }
+
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Bienvenido al Futuro del Alquiler de Portátiles</h1>
+        <h2>Tu herramienta perfecta para cualquier momento. ¡Comienza ahora!</h2>
+
+        <!-- Contenedor de botones alineados -->
+        <div class="btn-container">
+            <a href="{{ url_for('login') }}" class="btn">Iniciar sesión</a>
+            <a href="{{ url_for('register') }}" class="btn">Registro</a>
+        </div>
+    </div>
+
+    <!-- Scripts necesarios -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
