@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bienvenido | Alquiler de Portátiles</title>
-    <!-- Link a Bootstrap 5 para estilo básico -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Fondo y tipografía mínima */
         body {
             background-color: #121212;
             color: white;
@@ -35,22 +33,20 @@
             margin-bottom: 50px;
         }
 
-        /* Estilo de los botones */
         .btn {
-            background-color: rgb(0, 255, 255);  /* Fondo visible para los botones */
-            border: 2px solid rgb(0, 255, 255);  /* Borde visible */
+            background-color: rgb(0, 255, 255); 
+            border: 2px solid rgb(0, 255, 255);  
             padding: 15px 30px;
             font-size: 1.1rem;
             border-radius: 30px;
-            color: white;  /* El texto es blanco por defecto */
+            color: white; 
             position: relative;
             transition: all 0.3s ease;
             overflow: hidden;
         }
 
-        /* Efecto de borde RGB en los botones */
         .btn:hover {
-            color: white; /* El texto será blanco cuando el botón esté en hover */
+            color: white; 
             background: transparent;
             border: 2px solid rgb(0, 255, 255);
             animation: waveEffect 1.5s linear infinite;
@@ -77,7 +73,6 @@
             left: 50%;
         }
 
-        /* Animación de onda RGB */
         @keyframes waveEffect {
             0% {
                 border-color: rgb(0, 255, 255);
@@ -90,7 +85,6 @@
             }
         }
 
-        /* Estilo para la fila de botones */
         .btn-container {
             width: 100%;
             display: flex;
@@ -110,14 +104,12 @@
         <h1>Bienvenido al Futuro del Alquiler de Portátiles</h1>
         <h2>Tu herramienta perfecta para cualquier momento. ¡Comienza ahora!</h2>
 
-        <!-- Contenedor de botones alineados -->
         <div class="btn-container">
             <a href="{{ url_for('login') }}" class="btn">Iniciar sesión</a>
             <a href="{{ url_for('register') }}" class="btn">Registro</a>
         </div>
     </div>
 
-    <!-- Scripts necesarios -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
