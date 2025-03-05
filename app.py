@@ -22,7 +22,7 @@ def login():
         user = cursor.fetchone()
         if user and check_password_hash(user[1], password):
             session['user_id'] = user[0]
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('dashboard'))  # Redirige a dashboard después de iniciar sesión correctamente
         else:
             return "Credenciales incorrectas", 401
     return render_template('login.html')
@@ -46,7 +46,7 @@ def register():
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
-        return redirect(url_for('login'))
+        return redirect(url_for('login'))  # Si no está logueado, redirige a login
     cursor = db.cursor()
     cursor.execute("SELECT * FROM portatiles")
     portatiles = cursor.fetchall()
@@ -55,16 +55,29 @@ def dashboard():
 @app.route('/alquilar/<int:portatil_id>')
 def alquilar(portatil_id):
     if 'user_id' not in session:
-        return redirect(url_for('login'))
+        return redirect(url_for('login'))  # Si no está logueado, redirige a login
 
     user_id = session['user_id']
     inicio = datetime.now()
     fin = inicio.replace(hour=23, minute=59, second=59)  # Suponiendo alquiler de un día
 
     cursor = db.cursor()
-    cursor.execute("INSERT INTO fecha (id_usuarios, id_portatiles, inicio, fin) VALUES (%s, %s, %s, %s)",
-                   (user_id, portatil_id, inicio, fin))
-    db.commit()
+
+    # Verifica si ya hay una reserva para ese usuario y portatil
+    cursor.execute("SELECT * FROM fecha WHERE id_usuarios = %s AND id_portatiles = %s", (user_id, portatil_id))
+    existing_reservation = cursor.fetchone()
+
+    if existing_reservation:
+        # Si ya hay una reserva, devuelve un mensaje de error o redirige a otra página
+        return "Ya tienes una reserva para este portatil.", 400
+
+    # Si no existe la reserva, inserta la nueva
+    try:
+        cursor.execute("INSERT INTO fecha (id_usuarios, id_portatiles, inicio, fin) VALUES (%s, %s, %s, %s)",
+                       (user_id, portatil_id, inicio, fin))
+        db.commit()
+    except pymysql.MySQLError as e:
+        return f"Error al hacer la reserva: {e}", 500
 
     return redirect(url_for('dashboard'))
 
@@ -89,13 +102,60 @@ def admin_login():
 @app.route('/admin_dashboard')
 def admin_dashboard():
     if 'admin_id' not in session:
-        return redirect(url_for('admin_login'))
+        return redirect(url_for('admin_login'))  # Si no está logueado como admin, redirige al login
     
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM portatiles")
-    portatiles = cursor.fetchall()
+    
+    # Consulta para obtener los portátiles y las reservas
+    cursor.execute("""
+        SELECT p.id, p.marca, p.estado, p.almacenamiento, p.OS, r.inicio, u.username, u.email
+        FROM portatiles p
+        LEFT JOIN fecha r ON p.id = r.id_portatiles
+        LEFT JOIN usuarios u ON r.id_usuarios = u.id
+        ORDER BY r.inicio DESC
+    """)
+    portatiles_reservados = cursor.fetchall()
 
-    return render_template('admin_dashboard.html', portatiles=portatiles)
+    return render_template('admin_dashboard.html', portatiles_reservados=portatiles_reservados)
+
+@app.route('/reservados')
+def reservados():
+    if 'admin_id' not in session:
+        return redirect(url_for('admin_login'))  # Si no está logueado como admin, redirige al login
+    
+    cursor = db.cursor()
+    
+    # Consulta para obtener los portátiles y las reservas
+    cursor.execute("""
+        SELECT p.id, p.marca, p.estado, p.almacenamiento, p.OS, r.inicio, u.username, u.email
+        FROM portatiles p
+        LEFT JOIN fecha r ON p.id = r.id_portatiles
+        LEFT JOIN usuarios u ON r.id_usuarios = u.id
+        ORDER BY r.inicio DESC
+    """)
+    portatiles_reservados = cursor.fetchall()
+
+    return render_template('reservados.html', portatiles_reservados=portatiles_reservados)
+
+@app.route('/mis_reservas')
+def mis_reservas():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))  # Si no está logueado, redirige a login
+
+    user_id = session['user_id']
+    cursor = db.cursor()
+
+    # Consulta para obtener las reservas del usuario
+    cursor.execute("""
+        SELECT p.id, p.marca, f.inicio
+        FROM portatiles p
+        JOIN fecha f ON p.id = f.id_portatiles
+        WHERE f.id_usuarios = %s
+        ORDER BY f.inicio DESC
+    """, (user_id,))
+    reservas = cursor.fetchall()
+
+    return render_template('mis_reservas.html', reservas=reservas)
 
 @app.route('/logout')
 def logout():

@@ -10,107 +10,91 @@
             background-color: #121212;
             color: white;
             font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
         }
-
         h2 {
             font-size: 2rem;
-            font-weight: 700;
-            color: #ffffff;
+            font-weight: 400;
+            color: white;
             margin-bottom: 30px;
         }
-
-        .form-control {
-            background-color: #222;
+        .table {
+            width: 80%;
+            margin-top: 30px;
             border: 2px solid rgb(0, 255, 255);
             color: white;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            padding: 10px;
         }
-
-        .form-control:focus {
-            outline: none;
+        .table th, .table td {
             border: 2px solid rgb(0, 255, 255);
-            animation: waveEffect 1.5s linear infinite;
+            padding: 15px;
+            transition: border 0.3s ease;
+            color: white;
         }
-
+        .table th {
+            background-color: rgba(0, 255, 255, 0.1);
+        }
+        .table td {
+            background-color: rgba(0, 255, 255, 0.05);
+        }
+        .table tbody tr:hover td {
+            animation: waveEffect 2s linear infinite;
+        }
         @keyframes waveEffect {
-            0% {
-                border-color: rgb(0, 255, 255);
-            }
-            50% {
-                border-color: rgb(255, 0, 150);
-            }
-            100% {
-                border-color: rgb(255, 255, 0);
-            }
+            0% { border-color: rgb(0, 255, 255); }
+            50% { border-color: rgb(255, 0, 150); }
+            100% { border-color: rgb(255, 255, 0); }
         }
-
-        .container {
-            max-width: 800px;
+        .form-container {
+            width: 80%;
+            margin-top: 30px;
             padding: 20px;
+            background-color: rgba(0, 255, 255, 0.1);
+            border-radius: 10px;
         }
-
-        .btn-success {
-            background: rgb(0, 255, 255);
-            border: none;
-            padding: 10px 20px;
-            font-size: 1.1rem;
-            border-radius: 30px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-success:hover {
-            background: transparent;
-            color: white;
+        .form-container input {
+            background-color: rgba(0, 255, 255, 0.05);
             border: 2px solid rgb(0, 255, 255);
-            animation: waveEffect 1.5s linear infinite;
-        }
-
-        .btn-danger {
-            background-color: #f44336;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1.1rem;
-            border-radius: 30px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-danger:hover {
-            background: transparent;
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 100%;
             color: white;
-            border: 2px solid #f44336;
-            animation: waveEffect 1.5s linear infinite;
         }
-
+        .form-container button {
+            background-color: rgb(0, 255, 255);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 5px;
+        }
+        .form-container button:hover {
+            background-color: rgb(255, 0, 150);
+        }
     </style>
 </head>
-<body class="container mt-5">
-
-    <h2 class="text-center">Lista de Portátiles Disponibles</h2>
-
+<body>
+    <h2>Gestión de Portátiles</h2>
+    
     <!-- Formulario para agregar un nuevo portátil -->
-    <form action="{{ url_for('admin_dashboard') }}" method="POST" class="w-50 mx-auto mt-4">
-        <div class="mb-3">
-            <label for="marca" class="form-label">Marca</label>
-            <input type="text" name="marca" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label for="estado" class="form-label">Estado</label>
-            <input type="text" name="estado" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label for="almacenamiento" class="form-label">Almacenamiento</label>
-            <input type="text" name="almacenamiento" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label for="sistema_operativo" class="form-label">Sistema Operativo</label>
-            <input type="text" name="sistema_operativo" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-success">Agregar Portátil</button>
-    </form>
+    <div class="form-container">
+        <h3>Agregar Nuevo Portátil</h3>
+        <form method="POST">
+            <input type="text" name="marca" placeholder="Marca" required>
+            <input type="text" name="estado" placeholder="Estado" required>
+            <input type="text" name="almacenamiento" placeholder="Almacenamiento" required>
+            <input type="text" name="os" placeholder="Sistema Operativo" required>
+            <button type="submit">Agregar Portátil</button>
+        </form>
+    </div>
 
-    <!-- Tabla con la lista de portátiles -->
+    <!-- Mostrar los portátiles existentes -->
     <table class="table table-bordered mt-4">
         <thead>
             <tr>
@@ -134,8 +118,9 @@
         </tbody>
     </table>
 
-    <!-- Botón de cierre de sesión -->
-    <a href="{{ url_for('logout') }}" class="btn btn-danger">Cerrar sesión</a>
-
+    <!-- Botón para redirigir a la página de Reservados -->
+    <div class="mt-4">
+        <a href="{{ url_for('reservados') }}" class="btn btn-info">Ver Reservados</a>
+    </div>
 </body>
 </html>
