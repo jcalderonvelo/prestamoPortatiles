@@ -46,40 +46,96 @@ def register():
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
-        return redirect(url_for('login'))  # Si no está logueado, redirige a login
+        return redirect(url_for('login'))  # Redirige a login si no está autenticado
+
+    user_id = session['user_id']  # Obtén el ID del usuario autenticado
+
+    # Consulta para obtener los portátiles disponibles
     cursor = db.cursor()
     cursor.execute("SELECT * FROM portatiles")
     portatiles = cursor.fetchall()
-    return render_template('dashboard.html', portatiles=portatiles)
 
-@app.route('/alquilar/<int:portatil_id>')
+    # Consulta para obtener las reservas del usuario actual
+    cursor.execute("""
+        SELECT p.id, p.marca, r.fecha_reserva 
+        FROM reservas r
+        JOIN portatiles p ON r.portatil_id = p.id
+        WHERE r.usuario_id = %s
+    """, (user_id,))
+    reservas = cursor.fetchall()
+
+    return render_template('dashboard.html', portatiles=portatiles, reservas=reservas)
+
+@app.route('/alquilar/<int:portatil_id>', methods=['GET', 'POST'])
 def alquilar(portatil_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))  # Si no está logueado, redirige a login
 
     user_id = session['user_id']
-    inicio = datetime.now()
-    fin = inicio.replace(hour=23, minute=59, second=59)  # Suponiendo alquiler de un día
+    fecha_reserva = datetime.now()
 
     cursor = db.cursor()
 
-    # Verifica si ya hay una reserva para ese usuario y portatil
-    cursor.execute("SELECT * FROM fecha WHERE id_usuarios = %s AND id_portatiles = %s", (user_id, portatil_id))
+    # Verifica si ya hay una reserva para ese usuario y portátil
+    cursor.execute("SELECT * FROM reservas WHERE usuario_id = %s AND portatil_id = %s", (user_id, portatil_id))
     existing_reservation = cursor.fetchone()
 
     if existing_reservation:
         # Si ya hay una reserva, devuelve un mensaje de error o redirige a otra página
-        return "Ya tienes una reserva para este portatil.", 400
+        return "Ya tienes una reserva para este portátil.", 400
 
     # Si no existe la reserva, inserta la nueva
     try:
-        cursor.execute("INSERT INTO fecha (id_usuarios, id_portatiles, inicio, fin) VALUES (%s, %s, %s, %s)",
-                       (user_id, portatil_id, inicio, fin))
+        cursor.execute("INSERT INTO reservas (usuario_id, portatil_id, fecha_reserva) VALUES (%s, %s, %s)",
+                       (user_id, portatil_id, fecha_reserva))
         db.commit()
     except pymysql.MySQLError as e:
         return f"Error al hacer la reserva: {e}", 500
 
-    return redirect(url_for('dashboard'))
+    # Redirigir con el ancla '#mis-reservas' para que el navegador se desplace hacia la sección de 'Mis Reservas'
+    return redirect(url_for('dashboard') + '#mis-reservas')
+
+@app.route('/cancelar_reserva/<int:reserva_id>', methods=['POST'])
+def cancelar_reserva(reserva_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))  # Redirige a login si el usuario no está autenticado
+
+    user_id = session['user_id']
+    cursor = db.cursor()
+
+    # Verificar si la reserva pertenece al usuario
+    cursor.execute("""
+        SELECT * FROM reservas WHERE id = %s AND usuario_id = %s
+    """, (reserva_id, user_id))
+    reserva = cursor.fetchone()
+
+    if not reserva:
+        return "Reserva no encontrada o no pertenece al usuario", 404
+
+    # Eliminar las entradas asociadas a esta reserva en la tabla 'fecha'
+    cursor.execute("""
+        DELETE FROM fecha WHERE id_usuarios = %s AND id_portatiles = %s
+    """, (user_id, reserva[1]))  # reserva[1] es el id del portátil asociado
+
+    # Eliminar la reserva de la tabla 'reservas'
+    cursor.execute("""
+        DELETE FROM reservas WHERE id = %s
+    """, (reserva_id,))
+    db.commit()
+
+    # Verificación de eliminación
+    cursor.execute("""
+        SELECT * FROM reservas WHERE id = %s
+    """, (reserva_id,))
+    reserva_eliminada = cursor.fetchone()
+
+    if not reserva_eliminada:
+        print(f"Reserva con ID {reserva_id} eliminada correctamente.")
+    else:
+        print(f"ERROR: La reserva con ID {reserva_id} NO se eliminó.")
+
+    # Redirigir al dashboard para recargar la página
+    return redirect(url_for('dashboard') + '#mis-reservas')
 
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
@@ -99,24 +155,54 @@ def admin_login():
 
     return render_template('admin_login.html')
 
-@app.route('/admin_dashboard')
+@app.route('/admin_dashboard', methods=['GET', 'POST'])
 def admin_dashboard():
     if 'admin_id' not in session:
-        return redirect(url_for('admin_login'))  # Si no está logueado como admin, redirige al login
-    
-    cursor = db.cursor()
-    
-    # Consulta para obtener los portátiles y las reservas
-    cursor.execute("""
-        SELECT p.id, p.marca, p.estado, p.almacenamiento, p.OS, r.inicio, u.username, u.email
-        FROM portatiles p
-        LEFT JOIN fecha r ON p.id = r.id_portatiles
-        LEFT JOIN usuarios u ON r.id_usuarios = u.id
-        ORDER BY r.inicio DESC
-    """)
-    portatiles_reservados = cursor.fetchall()
+        return redirect(url_for('admin_login'))  # Redirige si no está logueado como admin
 
-    return render_template('admin_dashboard.html', portatiles_reservados=portatiles_reservados)
+    cursor = db.cursor(pymysql.cursors.DictCursor)
+
+    if request.method == 'POST':
+        marca = request.form['marca']
+        estado = request.form['estado']
+        almacenamiento = request.form['almacenamiento']
+        os = request.form['os']
+
+        cursor.execute("INSERT INTO portatiles (marca, estado, almacenamiento, OS) VALUES (%s, %s, %s, %s)",
+                       (marca, estado, almacenamiento, os))
+        db.commit()
+
+    # Eliminar portátil y las reservas asociadas
+    if request.args.get('delete_id'):
+        delete_id = request.args.get('delete_id')
+
+        # Primero, eliminar las reservas asociadas a este portátil de la tabla 'fecha'
+        cursor.execute("DELETE FROM fecha WHERE id_portatiles = %s", (delete_id,))
+        db.commit()
+
+        # También eliminar las reservas asociadas de la tabla 'reservas'
+        cursor.execute("DELETE FROM reservas WHERE portatil_id = %s", (delete_id,))
+        db.commit()
+
+        # Ahora, eliminar el portátil de la tabla 'portatiles'
+        cursor.execute("DELETE FROM portatiles WHERE id = %s", (delete_id,))
+        db.commit()
+
+    # Obtener los portátiles
+    cursor.execute("SELECT * FROM portatiles")
+    portatiles = cursor.fetchall()
+
+    # Obtener las reservas realizadas
+    cursor.execute("""
+        SELECT p.id, p.marca, u.username, r.fecha_reserva
+        FROM portatiles p
+        JOIN reservas r ON p.id = r.portatil_id
+        JOIN usuarios u ON r.usuario_id = u.id
+        ORDER BY r.fecha_reserva DESC
+    """)
+    reservas = cursor.fetchall()
+
+    return render_template('admin_dashboard.html', portatiles=portatiles, reservas=reservas)
 
 @app.route('/reservados')
 def reservados():
@@ -127,11 +213,11 @@ def reservados():
     
     # Consulta para obtener los portátiles y las reservas
     cursor.execute("""
-        SELECT p.id, p.marca, p.estado, p.almacenamiento, p.OS, r.inicio, u.username, u.email
+        SELECT p.id, p.marca, p.estado, p.almacenamiento, p.OS, r.fecha_reserva, u.username, u.email
         FROM portatiles p
-        LEFT JOIN fecha r ON p.id = r.id_portatiles
-        LEFT JOIN usuarios u ON r.id_usuarios = u.id
-        ORDER BY r.inicio DESC
+        LEFT JOIN reservas r ON p.id = r.portatil_id
+        LEFT JOIN usuarios u ON r.usuario_id = u.id
+        ORDER BY r.fecha_reserva DESC
     """)
     portatiles_reservados = cursor.fetchall()
 
@@ -147,11 +233,11 @@ def mis_reservas():
 
     # Consulta para obtener las reservas del usuario
     cursor.execute("""
-        SELECT p.id, p.marca, f.inicio
+        SELECT p.id, p.marca, r.fecha_reserva
         FROM portatiles p
-        JOIN fecha f ON p.id = f.id_portatiles
-        WHERE f.id_usuarios = %s
-        ORDER BY f.inicio DESC
+        JOIN reservas r ON p.id = r.portatil_id
+        WHERE r.usuario_id = %s
+        ORDER BY r.fecha_reserva DESC
     """, (user_id,))
     reservas = cursor.fetchall()
 

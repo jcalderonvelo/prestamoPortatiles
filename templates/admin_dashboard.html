@@ -94,29 +94,40 @@
         </form>
     </div>
 
-    <!-- Mostrar los portátiles existentes -->
-    <table class="table table-bordered mt-4">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Marca</th>
-                <th>Estado</th>
-                <th>Almacenamiento</th>
-                <th>Sistema Operativo</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for portatil in portatiles %}
-            <tr>
-                <td>{{ portatil[0] }}</td>
-                <td>{{ portatil[1] }}</td>
-                <td>{{ portatil[2] }}</td>
-                <td>{{ portatil[3] }}</td>
-                <td>{{ portatil[4] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<!-- Mostrar los portátiles existentes -->
+<h3 class="mt-5">Portátiles Disponibles</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Marca</th>
+            <th>Estado</th>
+            <th>Almacenamiento</th>
+            <th>Sistema Operativo</th>
+            <th>Acciones</th> <!-- Columna de acciones -->
+        </tr>
+    </thead>
+    <tbody>
+        {% for portatil in portatiles %}
+        <tr>
+            <td>{{ portatil.id }}</td>
+            <td>{{ portatil.marca }}</td>
+            <td>{{ portatil.estado }}</td>
+            <td>{{ portatil.almacenamiento }}</td>
+            <td>{{ portatil.OS }}</td>
+            <td>
+                <!-- Botón de eliminar -->
+                <a href="{{ url_for('admin_dashboard', delete_id=portatil.id) }}" class="btn btn-danger">Eliminar</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6">No hay portátiles disponibles</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 
     <!-- Botón para redirigir a la página de Reservados -->
     <div class="mt-4">
