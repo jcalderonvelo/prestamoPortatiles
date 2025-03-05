@@ -55,12 +55,17 @@
         .btn {
             background-color: rgb(0, 255, 255);
             border: 2px solid rgb(0, 255, 255);
-            padding: 10px 20px;
-            font-size: 1.1rem;
+            padding: 5px 10px;
+            font-size: 0.85rem;
             border-radius: 30px;
             color: white; 
-            margin-top: 20px;
+            margin-top: 10px;
             transition: all 0.3s ease;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;  /* Tamaño más pequeño */
+            font-size: 0.85rem;
         }
 
         .btn:hover {
@@ -93,6 +98,7 @@
                 <th>Estado</th>
                 <th>Almacenamiento</th>
                 <th>Sistema Operativo</th>
+                <th>Acción</th> <!-- Columna adicional para el botón -->
             </tr>
         </thead>
         <tbody>
@@ -103,6 +109,9 @@
                 <td>{{ portatil[2] }}</td>
                 <td>{{ portatil[3] }}</td>
                 <td>{{ portatil[4] }}</td>
+                <td class="text-center">  <!-- Centrado del botón en la celda -->
+                    <a href="{{ url_for('alquilar', portatil_id=portatil[0]) }}" class="btn btn-sm btn-success">Alquilar</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
