@@ -50,9 +50,13 @@ def dashboard():
 
     user_id = session['user_id']  # Obtén el ID del usuario autenticado
 
-    # Consulta para obtener los portátiles disponibles
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM portatiles")
+
+    # Consulta para obtener los portátiles disponibles (que no están reservados)
+    cursor.execute("""
+        SELECT * FROM portatiles 
+        WHERE id NOT IN (SELECT portatil_id FROM reservas)
+    """)
     portatiles = cursor.fetchall()
 
     # Consulta para obtener las reservas del usuario actual
@@ -65,6 +69,7 @@ def dashboard():
     reservas = cursor.fetchall()
 
     return render_template('dashboard.html', portatiles=portatiles, reservas=reservas)
+
 
 @app.route('/alquilar/<int:portatil_id>', methods=['GET', 'POST'])
 def alquilar(portatil_id):
@@ -105,12 +110,24 @@ def cancelar_reserva(reserva_id):
 
     # Verificar si la reserva pertenece al usuario
     cursor.execute("""
-        SELECT * FROM reservas WHERE id = %s AND usuario_id = %s
+        SELECT portatil_id FROM reservas WHERE id = %s AND usuario_id = %s
     """, (reserva_id, user_id))
     reserva = cursor.fetchone()
 
     if not reserva:
         return "Reserva no encontrada o no pertenece al usuario", 404
+
+    portatil_id = reserva[0]  # Obtener el ID del portátil de la reserva
+
+    # Eliminar la reserva (desvincular usuario y portátil)
+    cursor.execute("DELETE FROM reservas WHERE id = %s", (reserva_id,))
+    db.commit()
+
+    # Marcar el portátil como disponible
+    cursor.execute("UPDATE portatiles SET estado = 'disponible' WHERE id = %s", (portatil_id,))
+    db.commit()
+
+    return redirect(url_for('dashboard') + '#mis-reservas')
 
     # Eliminar las entradas asociadas a esta reserva en la tabla 'fecha'
     cursor.execute("""
