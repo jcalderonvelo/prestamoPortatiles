@@ -1,5 +1,5 @@
-CREATE DATABASE  IF NOT EXISTS `gr2_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `gr2_db`;
+CREATE DATABASE  IF NOT EXISTS `db_portatil` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `db_portatil`;
 -- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
 --
 -- Host: 10.3.29.20    Database: gr2_db
