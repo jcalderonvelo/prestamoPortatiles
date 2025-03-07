@@ -147,31 +147,6 @@ def cancelar_reserva(reserva_id):
 
     return redirect(url_for('dashboard') + '#mis-reservas')
 
-    # Eliminar las entradas asociadas a esta reserva en la tabla 'fecha'
-    cursor.execute("""
-        DELETE FROM fecha WHERE id_usuarios = %s AND id_portatiles = %s
-    """, (user_id, reserva[1]))  # reserva[1] es el id del portátil asociado
-
-    # Eliminar la reserva de la tabla 'reservas'
-    cursor.execute("""
-        DELETE FROM reservas WHERE id = %s
-    """, (reserva_id,))
-    db.commit()
-
-    # Verificación de eliminación
-    cursor.execute("""
-        SELECT * FROM reservas WHERE id = %s
-    """, (reserva_id,))
-    reserva_eliminada = cursor.fetchone()
-
-    if not reserva_eliminada:
-        print(f"Reserva con ID {reserva_id} eliminada correctamente.")
-    else:
-        print(f"ERROR: La reserva con ID {reserva_id} NO se eliminó.")
-
-    # Redirigir al dashboard para recargar la página
-    return redirect(url_for('dashboard') + '#mis-reservas')
-
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':

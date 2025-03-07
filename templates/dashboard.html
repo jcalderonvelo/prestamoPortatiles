@@ -127,7 +127,6 @@
                 <th>ID Portátil</th>
                 <th>Marca</th>
                 <th>Fecha de Reserva</th>
-                <th>Acción</th>
             </tr>
         </thead>
         <tbody>
@@ -136,11 +135,6 @@
                 <td>{{ reserva[0] }}</td>
                 <td>{{ reserva[1] }}</td>
                 <td>{{ reserva[2].strftime('%d/%m/%Y') }}</td>
-                <td class="text-center">
-                    <form action="{{ url_for('cancelar_reserva', reserva_id=reserva[0]) }}" method="POST">
-                        <button type="submit" class="btn btn-sm btn-danger">Cancelar Reserva</button>
-                    </form>
-                </td>
             </tr>
             {% endfor %}
         </tbody>
