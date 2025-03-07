@@ -71,6 +71,7 @@ Este proyecto es una aplicación web desarrollada con Flask para gestionar el al
 | `estado`        | VARCHAR(255)  | Estado del portátil                       |
 | `almacenamiento`| VARCHAR(255)  | Capacidad de almacenamiento del portátil |
 | `OS`            | VARCHAR(255)  | Sistema operativo del portátil            |
+| `ram`           | VARCHAR(255)  | RAM del portátil                          |
 
 ### Tabla `reservas`
 
@@ -106,15 +107,20 @@ Este proyecto es una aplicación web desarrollada con Flask para gestionar el al
 -   Visualización de portátiles disponibles.
 -   Alquiler de portátiles.
 -   Visualización de sus reservas.
+-   Cancelación de reservas.
+-   Visualización de la RAM de los portátiles reservados.
+-   Visualización de la fecha actual.
 -   Cierre de sesión.
 
 ### Administradores
 
 -   Inicio de sesión de administrador.
--   Agregar nuevos portátiles.
+-   Agregar nuevos portátiles (incluyendo RAM).
 -   Eliminar portátiles y sus reservas asociadas.
 -   Visualización de todas las reservas.
 -   Visualización de todos los portátiles y sus estados.
+-   Visualización de la RAM de los portátiles reservados.
+-   Visualización de la fecha actual.
 -   Cierre de sesión.
 
 ## Rutas
@@ -124,6 +130,7 @@ Este proyecto es una aplicación web desarrollada con Flask para gestionar el al
 -   `/register`: Página de registro de usuario.
 -   `/dashboard`: Panel de control del usuario.
 -   `/alquilar/<int:portatil_id>`: Ruta para alquilar un portátil.
+-   `/cancelar_reserva/<int:reserva_id>`: Ruta para cancelar una reserva.
 -   `/admin_login`: Página de inicio de sesión de administrador.
 -   `/admin_dashboard`: Panel de control del administrador.
 -   `/reservados`: Lista de portátiles reservados.
@@ -140,3 +147,6 @@ Este proyecto es una aplicación web desarrollada con Flask para gestionar el al
 -   Este proyecto es una base y puede ser mejorado con más funcionalidades y mejoras de seguridad.
 -   Los templates HTML se encuentran en la carpeta `templates`.
 -   La conexión a la base de datos debe ser configurada correctamente.
+-   Se ha añadido la funcionalidad de cancelar reservas para los usuarios y la visualización de la RAM de los portátiles.
+-   Se ha añadido la funcionalidad de la fecha actual para el usuario y el administrador.
+-   Se ha añadido la funcionalidad de la RAM para los portátiles.
