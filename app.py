@@ -82,23 +82,23 @@ def alquilar(portatil_id):
     cursor = db.cursor()
 
     # Verifica si ya hay una reserva para ese usuario y portátil
-    cursor.execute("SELECT * FROM reservas WHERE usuario_id = %s AND portatil_id = %s", (user_id, portatil_id))
-    existing_reservation = cursor.fetchone()
-
-    if existing_reservation:
-        # Si ya hay una reserva, devuelve un mensaje de error o redirige a otra página
-        return "Ya tienes una reserva para este portátil.", 400
-
-    # Si no existe la reserva, inserta la nueva
     try:
+        cursor.execute("SELECT * FROM reservas WHERE usuario_id = %s AND portatil_id = %s", (user_id, portatil_id))
+        existing_reservation = cursor.fetchone()
+
+        if existing_reservation:
+            return "Ya tienes una reserva para este portátil.", 400
+
         cursor.execute("INSERT INTO reservas (usuario_id, portatil_id, fecha_reserva) VALUES (%s, %s, %s)",
                        (user_id, portatil_id, fecha_reserva))
         db.commit()
-    except pymysql.MySQLError as e:
-        return f"Error al hacer la reserva: {e}", 500
 
-    # Redirigir con el ancla '#mis-reservas' para que el navegador se desplace hacia la sección de 'Mis Reservas'
-    return redirect(url_for('dashboard') + '#mis-reservas')
+        return redirect(url_for('dashboard') + '#mis-reservas')
+
+    except pymysql.MySQLError as e:
+        print("Error en MySQL:", str(e))  # Ver el error en la consola
+        return f"Error al hacer la reserva: {str(e)}", 500
+
 
 @app.route('/cancelar_reserva/<int:reserva_id>', methods=['POST'])
 def cancelar_reserva(reserva_id):
@@ -184,9 +184,13 @@ def admin_dashboard():
         estado = request.form['estado']
         almacenamiento = request.form['almacenamiento']
         os = request.form['os']
+        ram = request.form['ram']  # Captura el valor de RAM
 
-        cursor.execute("INSERT INTO portatiles (marca, estado, almacenamiento, OS) VALUES (%s, %s, %s, %s)",
-                       (marca, estado, almacenamiento, os))
+        # Insertar los datos del nuevo portátil en la base de datos
+        cursor.execute("""
+            INSERT INTO portatiles (marca, estado, almacenamiento, OS, ram) 
+            VALUES (%s, %s, %s, %s, %s)
+        """, (marca, estado, almacenamiento, os, ram))
         db.commit()
 
     # Eliminar portátil y las reservas asociadas
@@ -221,6 +225,7 @@ def admin_dashboard():
 
     return render_template('admin_dashboard.html', portatiles=portatiles, reservas=reservas)
 
+
 @app.route('/reservados')
 def reservados():
     if 'admin_id' not in session:
@@ -228,9 +233,9 @@ def reservados():
     
     cursor = db.cursor()
     
-    # Consulta para obtener los portátiles y las reservas
+    # Consulta para obtener los portátiles y las reservas, con RAM y la fecha actual
     cursor.execute("""
-        SELECT p.id, p.marca, p.estado, p.almacenamiento, p.OS, r.fecha_reserva, u.username, u.email
+        SELECT p.id, p.marca, p.estado, p.almacenamiento, p.OS, p.ram, r.fecha_reserva, u.username, u.email
         FROM portatiles p
         LEFT JOIN reservas r ON p.id = r.portatil_id
         LEFT JOIN usuarios u ON r.usuario_id = u.id
@@ -238,7 +243,10 @@ def reservados():
     """)
     portatiles_reservados = cursor.fetchall()
 
-    return render_template('reservados.html', portatiles_reservados=portatiles_reservados)
+    # Devolver los resultados con la fecha actual formateada para cada reserva
+    current_date = datetime.now().strftime('%Y-%m-%d')  # Formatear la fecha actual en el formato deseado
+    return render_template('reservados.html', portatiles_reservados=portatiles_reservados, current_date=current_date)
+
 
 @app.route('/mis_reservas')
 def mis_reservas():
@@ -248,9 +256,9 @@ def mis_reservas():
     user_id = session['user_id']
     cursor = db.cursor()
 
-    # Consulta para obtener las reservas del usuario
+    # Consulta para obtener las reservas del usuario, con RAM y fecha actual
     cursor.execute("""
-        SELECT p.id, p.marca, r.fecha_reserva
+        SELECT p.id, p.marca, r.fecha_reserva, p.ram
         FROM portatiles p
         JOIN reservas r ON p.id = r.portatil_id
         WHERE r.usuario_id = %s
@@ -258,7 +266,10 @@ def mis_reservas():
     """, (user_id,))
     reservas = cursor.fetchall()
 
-    return render_template('mis_reservas.html', reservas=reservas)
+    # Devolver los resultados con la fecha actual formateada
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    return render_template('mis_reservas.html', reservas=reservas, current_date=current_date)
+
 
 @app.route('/logout')
 def logout():
