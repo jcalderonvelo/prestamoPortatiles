@@ -100,60 +100,6 @@ def alquilar(portatil_id):
     # Redirigir con el ancla '#mis-reservas' para que el navegador se desplace hacia la sección de 'Mis Reservas'
     return redirect(url_for('dashboard') + '#mis-reservas')
 
-@app.route('/cancelar_reserva/<int:reserva_id>', methods=['POST'])
-def cancelar_reserva(reserva_id):
-    if 'user_id' not in session:
-        return redirect(url_for('login'))  # Redirige a login si el usuario no está autenticado
-
-    user_id = session['user_id']
-    cursor = db.cursor()
-
-    # Verificar si la reserva pertenece al usuario
-    cursor.execute("""
-        SELECT portatil_id FROM reservas WHERE id = %s AND usuario_id = %s
-    """, (reserva_id, user_id))
-    reserva = cursor.fetchone()
-
-    if not reserva:
-        return "Reserva no encontrada o no pertenece al usuario", 404
-
-    portatil_id = reserva[0]  # Obtener el ID del portátil de la reserva
-
-    # Eliminar la reserva (desvincular usuario y portátil)
-    cursor.execute("DELETE FROM reservas WHERE id = %s", (reserva_id,))
-    db.commit()
-
-    # Marcar el portátil como disponible
-    cursor.execute("UPDATE portatiles SET estado = 'disponible' WHERE id = %s", (portatil_id,))
-    db.commit()
-
-    return redirect(url_for('dashboard') + '#mis-reservas')
-
-    # Eliminar las entradas asociadas a esta reserva en la tabla 'fecha'
-    cursor.execute("""
-        DELETE FROM fecha WHERE id_usuarios = %s AND id_portatiles = %s
-    """, (user_id, reserva[1]))  # reserva[1] es el id del portátil asociado
-
-    # Eliminar la reserva de la tabla 'reservas'
-    cursor.execute("""
-        DELETE FROM reservas WHERE id = %s
-    """, (reserva_id,))
-    db.commit()
-
-    # Verificación de eliminación
-    cursor.execute("""
-        SELECT * FROM reservas WHERE id = %s
-    """, (reserva_id,))
-    reserva_eliminada = cursor.fetchone()
-
-    if not reserva_eliminada:
-        print(f"Reserva con ID {reserva_id} eliminada correctamente.")
-    else:
-        print(f"ERROR: La reserva con ID {reserva_id} NO se eliminó.")
-
-    # Redirigir al dashboard para recargar la página
-    return redirect(url_for('dashboard') + '#mis-reservas')
-
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
