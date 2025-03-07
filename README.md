@@ -14,8 +14,8 @@ Este proyecto es una aplicación web desarrollada con Flask para gestionar el al
 1.  Clonar el repositorio:
 
     ```bash
-    git clone <URL_del_repositorio>
-    cd <nombre_del_repositorio>
+    git clone https://github.com/jcalderonvelo/prestamoPortatiles.git
+    cd prestamoPortatiles
     ```
 
 2.  Crear un entorno virtual (recomendado):
