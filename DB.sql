@@ -63,9 +63,10 @@ DROP TABLE IF EXISTS `portatiles`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `portatiles` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `marca` varchar(100) DEFAULT NULL,
-  `estado` varchar(50) DEFAULT NULL,
-  `almacenamiento` int DEFAULT NULL,
+  `marca` varchar(100) NOT NULL,
+  `estado` varchar(50) NOT NULL,
+  `almacenamiento` varchar(50) NOT NULL,
+  `ram` varchar(50) NOT NULL,
   `OS` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -90,24 +91,6 @@ CREATE TABLE `reservas` (
   CONSTRAINT `reservas_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`),
   CONSTRAINT `reservas_ibfk_2` FOREIGN KEY (`portatil_id`) REFERENCES `portatiles` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `software`
---
-
-DROP TABLE IF EXISTS `software`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `software` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `id_portatiles` int NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `version` varchar(20) NOT NULL,
-  `licencia_fin` datetime NOT NULL,
-  PRIMARY KEY (`id`,`id_portatiles`),
-  KEY `fk_software_1` (`id_portatiles`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
