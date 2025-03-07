@@ -71,7 +71,7 @@ Este proyecto es una aplicación web desarrollada con Flask para gestionar el al
 | `estado`        | VARCHAR(255)  | Estado del portátil                       |
 | `almacenamiento`| VARCHAR(255)  | Capacidad de almacenamiento del portátil |
 | `OS`            | VARCHAR(255)  | Sistema operativo del portátil            |
-| `ram`           | VARCHAR(255) | RAM del portátil                          |
+| `ram`           | VARCHAR(255)  | RAM del portátil                          |
 
 ### Tabla `reservas`
 
@@ -108,6 +108,8 @@ Este proyecto es una aplicación web desarrollada con Flask para gestionar el al
 -   Alquiler de portátiles.
 -   Visualización de sus reservas.
 -   Cancelación de reservas.
+-   Visualización de la RAM de los portátiles reservados.
+-   Visualización de la fecha actual.
 -   Cierre de sesión.
 
 ### Administradores
@@ -117,6 +119,8 @@ Este proyecto es una aplicación web desarrollada con Flask para gestionar el al
 -   Eliminar portátiles y sus reservas asociadas.
 -   Visualización de todas las reservas.
 -   Visualización de todos los portátiles y sus estados.
+-   Visualización de la RAM de los portátiles reservados.
+-   Visualización de la fecha actual.
 -   Cierre de sesión.
 
 ## Rutas

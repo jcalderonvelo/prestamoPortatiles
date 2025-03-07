@@ -35,12 +35,12 @@ def register():
         password = generate_password_hash(request.form['password'])
 
         cursor = db.cursor()
-        cursor.execute("INSERT INTO usuarios (username, email, password_hash) VALUES (%s, %s, %s)", 
+        cursor.execute("INSERT INTO usuarios (username, email, password_hash) VALUES (%s, %s, %s)",
                        (username, email, password))
         db.commit()
-        
+
         return redirect(url_for('login'))
-    
+
     return render_template('register.html')
 
 @app.route('/dashboard')
@@ -54,14 +54,14 @@ def dashboard():
 
     # Consulta para obtener los portátiles disponibles (que no están reservados)
     cursor.execute("""
-        SELECT * FROM portatiles 
+        SELECT * FROM portatiles
         WHERE id NOT IN (SELECT portatil_id FROM reservas)
     """)
     portatiles = cursor.fetchall()
 
     # Consulta para obtener las reservas del usuario actual
     cursor.execute("""
-        SELECT p.id, p.marca, r.fecha_reserva 
+        SELECT p.id, p.marca, r.fecha_reserva
         FROM reservas r
         JOIN portatiles p ON r.portatil_id = p.id
         WHERE r.usuario_id = %s
@@ -159,11 +159,11 @@ def admin_login():
     if request.method == 'POST':
         correo = request.form['correo']
         password = request.form['password']
-        
+
         cursor = db.cursor()
         cursor.execute("SELECT id, password FROM admin WHERE correo = %s", (correo,))
         admin = cursor.fetchone()
-        
+
         if admin and admin[1] == password:
             session['admin_id'] = admin[0]
             return redirect(url_for('admin_dashboard'))
@@ -188,7 +188,7 @@ def admin_dashboard():
 
         # Insertar los datos del nuevo portátil en la base de datos
         cursor.execute("""
-            INSERT INTO portatiles (marca, estado, almacenamiento, OS, ram) 
+            INSERT INTO portatiles (marca, estado, almacenamiento, OS, ram)
             VALUES (%s, %s, %s, %s, %s)
         """, (marca, estado, almacenamiento, os, ram))
         db.commit()
@@ -225,15 +225,13 @@ def admin_dashboard():
 
     return render_template('admin_dashboard.html', portatiles=portatiles, reservas=reservas)
 
-
 @app.route('/reservados')
 def reservados():
     if 'admin_id' not in session:
         return redirect(url_for('admin_login'))  # Si no está logueado como admin, redirige al login
-    
+
     cursor = db.cursor()
-    
-    # Consulta para obtener los portátiles y las reservas, con RAM y la fecha actual
+
     cursor.execute("""
         SELECT p.id, p.marca, p.estado, p.almacenamiento, p.OS, p.ram, r.fecha_reserva, u.username, u.email
         FROM portatiles p
@@ -243,7 +241,7 @@ def reservados():
     """)
     portatiles_reservados = cursor.fetchall()
 
-    # Devolver los resultados con la fecha actual formateada para cada reserva
+
     current_date = datetime.now().strftime('%Y-%m-%d')  # Formatear la fecha actual en el formato deseado
     return render_template('reservados.html', portatiles_reservados=portatiles_reservados, current_date=current_date)
 
@@ -256,7 +254,7 @@ def mis_reservas():
     user_id = session['user_id']
     cursor = db.cursor()
 
-    # Consulta para obtener las reservas del usuario, con RAM y fecha actual
+
     cursor.execute("""
         SELECT p.id, p.marca, r.fecha_reserva, p.ram
         FROM portatiles p
@@ -266,10 +264,8 @@ def mis_reservas():
     """, (user_id,))
     reservas = cursor.fetchall()
 
-    # Devolver los resultados con la fecha actual formateada
     current_date = datetime.now().strftime('%Y-%m-%d')
     return render_template('mis_reservas.html', reservas=reservas, current_date=current_date)
-
 
 @app.route('/logout')
 def logout():
