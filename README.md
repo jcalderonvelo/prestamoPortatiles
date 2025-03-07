@@ -1,80 +1,142 @@
-# Proyecto: Aplicación de Alquiler de Portátiles con Flask
+# Proyecto de Gestión de Alquiler de Portátiles
 
-## Descripción
+Este proyecto es una aplicación web desarrollada con Flask para gestionar el alquiler de portátiles. Permite a los usuarios registrarse, iniciar sesión, alquilar portátiles disponibles y ver sus reservas. Los administradores pueden agregar, eliminar portátiles y ver todas las reservas realizadas.
 
-Esta aplicación web en Flask permite a los usuarios registrarse, iniciar sesión y gestionar el alquiler de portátiles. Utiliza MySQL como base de datos y werkzeug.security para el manejo seguro de contraseñas.
+## Requisitos
 
-## Tecnologías
-
-- Python (Flask)
-- MySQL (PyMySQL)
-- HTML y Bootstrap para la interfaz
+- Python 3.6+
+- Flask
+- PyMySQL
+- Werkzeug
 
 ## Instalación
 
-### Requisitos previos
+1.  Clonar el repositorio:
 
-- Python 3.x
-- MySQL Server
-- Entorno virtual de Python (opcional pero recomendado)
+    ```bash
+    git clone https://github.com/jcalderonvelo/prestamoPortatiles.git
+    cd prestamoPortatiles
+    ```
 
-### Pasos de instalación
+2.  Crear un entorno virtual (recomendado):
 
-1. Clonar el repositorio:
-   ```sh
-   git clone https://github.com/jcalderonvelo/prestamoPortatiles.git
-   cd prestamoPortatiles
-   ```
-2. Crear y activar un entorno virtual (opcional):
-   - En Linux/macOS:
-     ```sh
-     python3 -m venv venv
-     source venv/bin/activate
-     ```
-   - En Windows:
-     ```sh
-     python -m venv venv
-     venv\Scripts\activate
-     ```
-3. Instalar dependencias:
-   ```sh
-   pip install -r requirements.txt
-   ```
-4. Configurar la base de datos:
-   - Crear la base de datos `gr2_db` en MySQL.
-   - Configurar el usuario y permisos.
-   - Ejecutar las migraciones necesarias.
-5. Ejecutar la aplicación:
-   ```sh
-   python app.py
-   ```
-6. Acceder a la aplicación en el navegador:
-   ```
-   http://127.0.0.1:5000
-   ```
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate  # En Linux/macOS
+    venv\Scripts\activate  # En Windows
+    ```
 
-## Uso
+3.  Instalar las dependencias:
 
-- Registro de nuevos usuarios.
-- Inicio de sesión con validación de credenciales.
-- Acceso al dashboard para visualizar los portátiles disponibles.
+    ```bash
+    pip install Flask pymysql Werkzeug
+    ```
+
+4.  Configurar la base de datos:
+
+    -   Asegúrate de tener un servidor MySQL en ejecución.
+    -   Crea una base de datos llamada `gr2_db`.
+    -   Crea las tablas necesarias (ver esquema de la base de datos más abajo).
+    -   Modifica la conexión a la base de datos en el archivo `app.py` con tus credenciales:
+
+        ```python
+        db = pymysql.connect(host='10.3.29.20', port=33060, user='user_gr2', password='portatil123', database='gr2_db')
+        ```
+
+5.  Ejecutar la aplicación:
+
+    ```bash
+    python app.py
+    ```
+
+    La aplicación estará disponible en `http://127.0.0.1:5000/`.
+
+## Esquema de la Base de Datos
+
+### Tabla `usuarios`
+
+| Columna         | Tipo          | Descripción                               |
+| --------------- | ------------- | ----------------------------------------- |
+| `id`            | INT AUTO_INCREMENT | Identificador único del usuario         |
+| `username`      | VARCHAR(255)  | Nombre de usuario                         |
+| `email`         | VARCHAR(255)  | Correo electrónico del usuario            |
+| `password_hash` | VARCHAR(255)  | Hash de la contraseña del usuario         |
+
+### Tabla `portatiles`
+
+| Columna         | Tipo          | Descripción                               |
+| --------------- | ------------- | ----------------------------------------- |
+| `id`            | INT AUTO_INCREMENT | Identificador único del portátil        |
+| `marca`         | VARCHAR(255)  | Marca del portátil                        |
+| `estado`        | VARCHAR(255)  | Estado del portátil                       |
+| `almacenamiento`| VARCHAR(255)  | Capacidad de almacenamiento del portátil |
+| `OS`            | VARCHAR(255)  | Sistema operativo del portátil            |
+
+### Tabla `reservas`
+
+| Columna         | Tipo          | Descripción                               |
+| --------------- | ------------- | ----------------------------------------- |
+| `id`            | INT AUTO_INCREMENT | Identificador único de la reserva       |
+| `usuario_id`    | INT           | Identificador del usuario que hizo la reserva |
+| `portatil_id`   | INT           | Identificador del portátil reservado      |
+| `fecha_reserva` | DATETIME      | Fecha y hora de la reserva                |
+
+### Tabla `admin`
+
+| Columna         | Tipo          | Descripción                               |
+| --------------- | ------------- | ----------------------------------------- |
+| `id`            | INT AUTO_INCREMENT | Identificador único del administrador   |
+| `correo`        | VARCHAR(255)  | Correo electrónico del administrador      |
+| `password`      | VARCHAR(255)  | Contraseña del administrador              |
+
+### Tabla `fecha`
+
+| Columna         | Tipo          | Descripción                               |
+| --------------- | ------------- | ----------------------------------------- |
+| `id`            | INT AUTO_INCREMENT | Identificador único de la fecha       |
+| `id_portatiles` | INT           | Identificador del portátil reservado      |
+| `fecha_reserva` | DATETIME      | Fecha y hora de la reserva                |
+
+## Funcionalidades
+
+### Usuarios
+
+-   Registro de usuarios.
+-   Inicio de sesión.
+-   Visualización de portátiles disponibles.
+-   Alquiler de portátiles.
+-   Visualización de sus reservas.
+-   Cierre de sesión.
+
+### Administradores
+
+-   Inicio de sesión de administrador.
+-   Agregar nuevos portátiles.
+-   Eliminar portátiles y sus reservas asociadas.
+-   Visualización de todas las reservas.
+-   Visualización de todos los portátiles y sus estados.
+-   Cierre de sesión.
+
+## Rutas
+
+-   `/`: Página de inicio.
+-   `/login`: Página de inicio de sesión de usuario.
+-   `/register`: Página de registro de usuario.
+-   `/dashboard`: Panel de control del usuario.
+-   `/alquilar/<int:portatil_id>`: Ruta para alquilar un portátil.
+-   `/admin_login`: Página de inicio de sesión de administrador.
+-   `/admin_dashboard`: Panel de control del administrador.
+-   `/reservados`: Lista de portátiles reservados.
+-   `/mis_reservas`: Lista de reservas del usuario.
+-   `/logout`: Cierre de sesión.
 
 ## Seguridad
 
-- Contraseñas encriptadas con `werkzeug.security`.
-- Uso de sesiones para autenticación de usuarios.
+-   Las contraseñas de los usuarios se almacenan de forma segura utilizando `generate_password_hash` de Werkzeug.
+-   Las sesiones se gestionan con Flask `session`.
 
-## Mejoras futuras
+## Notas
 
-- Implementar roles de usuario.
-- Agregar funcionalidad de alquiler de portátiles.
-- Implementar Docker para despliegue más fácil, utilizando un Dockerfile para definir la imagen de la aplicación y docker-compose para gestionar los servicios, como la base de datos y el backend.
-
-## Licencia
-
-Este proyecto está bajo la licencia MIT. Puedes ver el archivo `LICENSE` para más detalles.
-
----
-
-*Proyecto desarrollado por el Grupo 2.*
-
+-   Este proyecto es una base y puede ser mejorado con más funcionalidades y mejoras de seguridad.
+-   Los templates HTML se encuentran en la carpeta `templates`.
+-   La conexión a la base de datos debe ser configurada correctamente.
