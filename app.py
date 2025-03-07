@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, g
 import pymysql
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
@@ -6,7 +6,25 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta'
 
-db = pymysql.connect(host='10.3.29.20', port=33060, user='user_gr2', password='portatil123', database='gr2_db')
+# Conexión a la base de datos con un tiempo de espera de conexión
+db = pymysql.connect(
+    host='10.3.29.20', 
+    port=33060, 
+    user='user_gr2', 
+    password='portatil123', 
+    database='gr2_db', 
+    connect_timeout=10  # Timeout de 10 segundos
+)
+
+@app.before_request
+def before_request():
+    """Asegura que la conexión a la base de datos esté activa."""
+    try:
+        # Realiza un ping a la base de datos para asegurarse de que la conexión sigue activa
+        if db.open:
+            db.ping(reconnect=True)  # Reconecta si es necesario
+    except pymysql.MySQLError as e:
+        print(f"Error al mantener la conexión: {str(e)}")
 
 @app.route('/')
 def index():
@@ -241,7 +259,6 @@ def reservados():
     """)
     portatiles_reservados = cursor.fetchall()
 
-
     current_date = datetime.now().strftime('%Y-%m-%d')  # Formatear la fecha actual en el formato deseado
     return render_template('reservados.html', portatiles_reservados=portatiles_reservados, current_date=current_date)
 
@@ -253,7 +270,6 @@ def mis_reservas():
 
     user_id = session['user_id']
     cursor = db.cursor()
-
 
     cursor.execute("""
         SELECT p.id, p.marca, r.fecha_reserva, p.ram
